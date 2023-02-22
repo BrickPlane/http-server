@@ -22,19 +22,13 @@ var users = []UserType{
 
 func main(){
 	router :=gin.Default()
-	router.GET("/users", getUsers)
-	router.GET("/id", getUserByID)
-	router.POST("/users", addUser)
-	router.PATCH("/ch", updateUser)
-	router.DELETE("/delete", deleteUsers)
+	router.GET("/getUser", getUsers)
+	router.GET("/getUserByID", getUserByID)
+	router.POST("/addUser", addUser)
+	router.PATCH("/updateUser", updateUser)
+	router.DELETE("/deleteUsers", deleteUsers)
 	router.Run("localhost:8083")
-	
 }
-// TODO: create rute getUserByID 0.0.0.0:8083/users?id=32 ✓
-// TODO: add error handler result ✓
-// TODO: add validation input data ✓
-// TODO: PATCH must update record not create ✓
-// TODO: Delete user ✓
 
 func getUsers(c *gin.Context) {
 	fmt.Println("in users")
