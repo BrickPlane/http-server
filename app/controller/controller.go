@@ -16,7 +16,7 @@ func GetUser(c *gin.Context) {
 func SignIn(c *gin.Context) {
 	var creds storage.Credential
 	if err := c.BindJSON(&creds); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"msg" : "Wrong input data"})
+		c.IndentedJSON(http.StatusBadRequest, "Wrong input data")
 		return
 	}
 
