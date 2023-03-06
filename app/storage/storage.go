@@ -2,7 +2,8 @@ package storage
 
 import (
 	"errors"
-	
+	"fmt"
+
 	"github.com/golang-jwt/jwt"
 ) 
 
@@ -23,6 +24,12 @@ func NewCredential(id, login, password, types string, phone int) (*Credential, e
 	cred.setType(types)	
 	
 	return cred, nil
+}
+
+func (c *Credential) MyTestFunc(data int) error {
+	fmt.Println("... Hello data : ", data)
+
+	return nil
 }
 
 func (c *Credential) setID(id string) error {

@@ -16,7 +16,7 @@ func GetUser(c *gin.Context) {
 func SignIn(c *gin.Context) {
 	var creds storage.Credential
 	if err := c.BindJSON(&creds); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, "Wrong input data")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"msg" : "Wrong input data"})
 		return
 	}
 
@@ -31,7 +31,7 @@ func SignIn(c *gin.Context) {
 func Parse(c *gin.Context) {
 	var token string 
 	if err := c.BindJSON(&token); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, "Wrong input token data")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"msg" : "Invalid token"})
 		return
 	}
 
@@ -43,7 +43,11 @@ func Parse(c *gin.Context) {
 }
 
 func ParseBearer(c *gin.Context) {
-	if err := service.WithBearer(c); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, err.Error())
-	}
+
+	check := service.WithBearer(c)
+	c.IndentedJSON(http.StatusOK, check)
+
+	// if err := service.WithBearer(string); err != nil {
+	// 	c.IndentedJSON(http.StatusBadRequest, err.Error())
+	// }
 }

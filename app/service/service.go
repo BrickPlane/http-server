@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -73,33 +74,45 @@ func Parse(c *gin.Context, tokenSignStr string) (*jwt.Token, error) {
 	return tok, nil
 }
 
-func WithBearer(c *gin.Context) error {
-
-	authorizationHeader := c.Request.Header.Get("authorization")
+func HandlerFunc() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authorizationHeader := c.Request.Header.Get("authorization")
 	if authorizationHeader == "" {
-		return errors.New("Header is empty")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Header is empty"})
+		return 
 	}
 
 	bearerToken := strings.Split(authorizationHeader, " ")
 
 	if len(bearerToken) < 2 {
-		return errors.New("Header is empty")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Header is empty"})
+		return 
 	}
 
 	claims, err := parseJWtToken(bearerToken[1])
 	if err != nil {
-		return err
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Invalid token"})
+		return 
 	}
 
 	for key, val := range *claims {
 		if key == "exp" {
 			if time.Now().Unix() > int64(val.(float64)) {
-				return errors.New("Invalid token")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Invalid token"})
+				return 
 			}
 		}
 	}
+	c.Set("check", "token valid")
+	 	c.Next()
+	}
 
-	return nil
+
+}
+
+func WithBearer(c *gin.Context) string{
+	ResultCheck := c.MustGet("check").(string)
+	return ResultCheck
 }
 
 func parseJWtToken(token string) (*jwt.MapClaims, error) {
@@ -124,4 +137,9 @@ func keyFunc(token *jwt.Token) (interface{}, error) {
 	}
 
 	return []byte(jwtKey), nil
+}
+
+func TestService(c *gin.Context) string {
+
+	return ""
 }
