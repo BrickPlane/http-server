@@ -15,6 +15,34 @@ type Credential struct {
 	Types string	 `json:"type"`
 }
 
+// // type IController interface{
+// // 	SignIn(c *gin.Context)
+// // }
+
+// // type IService interface {
+// // 	SignToken(c *gin.Context, creds storage.Credential) (string, error)
+// // }
+
+// // func NewController(service IService) *Controller {
+// // 	return &Controller{
+// // 		service: service,
+// // 	}
+// // }
+
+
+type SignKey struct {
+	
+}
+
+type keyMapType map[int]SignKey
+
+func addKey() {
+	x := make(keyMapType)
+	x[1] = SignKey{}
+	fmt.Println(x[1])
+}
+
+
 func NewCredential(id, login, password, types string, phone int) (*Credential, error) {
 	cred := &Credential{}
 	cred.setID(id)

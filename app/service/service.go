@@ -2,11 +2,8 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
-	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"http2/app/storage"
@@ -15,7 +12,16 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func SignToken(c *gin.Context, creds storage.Credential) (string, error) {
+
+type Service struct{
+	// structure storage.SignKey
+}
+
+func NewService() *Service {
+	return new(Service)
+}
+
+func (s *Service) SignToken(c *gin.Context, creds storage.Credential) (string, error) {
 	timeToDie, err := strconv.ParseInt(os.Getenv("TIME_TO_DIE"), 10, 64)
 	if err != nil {
 		return "", err
@@ -38,108 +44,4 @@ func SignToken(c *gin.Context, creds storage.Credential) (string, error) {
 		return "", err
 	}
 	return tokenSignStr, nil
-}
-
-func Parse(c *gin.Context, tokenSignStr string) (*jwt.Token, error) {
-	clam := jwt.MapClaims{}
-
-	jwtKey, err := json.Marshal(os.Getenv("JWT_KEY"))
-	if err != nil {
-		return nil, err
-	}
-	tok, err := jwt.ParseWithClaims(
-		tokenSignStr,
-		clam,
-		func(tok *jwt.Token) (interface{}, error) { return []byte(jwtKey), nil },
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	for key, val := range clam {
-		if key == "exp" {
-			expiredDate := val
-			if time.Now().Unix() > int64(expiredDate.(float64)) {
-				return nil, errors.New("token expired")
-			}
-		}
-	}
-
-	timeToDie, err := strconv.ParseInt(os.Getenv("TIME_TO_DIE"), 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	clam["exp"] = timeToDie
-	return tok, nil
-}
-
-func HandlerFunc() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authorizationHeader := c.Request.Header.Get("authorization")
-	if authorizationHeader == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Header is empty"})
-		return 
-	}
-
-	bearerToken := strings.Split(authorizationHeader, " ")
-
-	if len(bearerToken) < 2 {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Header is empty"})
-		return 
-	}
-
-	claims, err := parseJWtToken(bearerToken[1])
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Invalid token"})
-		return 
-	}
-
-	for key, val := range *claims {
-		if key == "exp" {
-			if time.Now().Unix() > int64(val.(float64)) {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"msg" : "Invalid token"})
-				return 
-			}
-		}
-	}
-	c.Set("check", "token valid")
-	 	c.Next()
-	}
-
-
-}
-
-func WithBearer(c *gin.Context) string{
-	ResultCheck := c.MustGet("check").(string)
-	return ResultCheck
-}
-
-func parseJWtToken(token string) (*jwt.MapClaims, error) {
-	clam := jwt.MapClaims{}
-
-	_, err := jwt.ParseWithClaims(token, clam, keyFunc)
-	if err != nil {
-		return nil, err
-	}
-
-	return &clam, nil
-}
-
-func keyFunc(token *jwt.Token) (interface{}, error) {
-	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, errors.New("method error")
-	}
-
-	jwtKey, err := json.Marshal(os.Getenv("JWT_KEY"))
-	if err != nil {
-		return nil, err
-	}
-
-	return []byte(jwtKey), nil
-}
-
-func TestService(c *gin.Context) string {
-
-	return ""
 }
