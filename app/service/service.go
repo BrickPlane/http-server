@@ -1,47 +1,30 @@
 package service
 
 import (
-	"encoding/json"
-	"os"
-	"strconv"
-	"time"
-
-	"http2/app/storage"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 )
 
+type IStorage interface {
+	StorageIn(c *gin.Context, data string) error
+}
 
 type Service struct{
-	// structure storage.SignKey
+	storage IStorage
 }
 
-func NewService() *Service {
-	return new(Service)
+func NewService(storage IStorage) *Service {
+	return &Service{
+		storage: storage,
+	}
 }
 
-func (s *Service) SignToken(c *gin.Context, creds storage.Credential) (string, error) {
-	timeToDie, err := strconv.ParseInt(os.Getenv("TIME_TO_DIE"), 10, 64)
+func (s *Service) SignToken(c *gin.Context) string {
+	x := "magic"
+	err := s.storage.StorageIn(c, x)
 	if err != nil {
-		return "", err
+		return fmt.Sprintln("err")
 	}
-	claims := &storage.Claims{
-		Login:    creds.Login,
-		Password: creds.Password,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Duration(timeToDie) * time.Hour).Unix(),
-		},
-	}
-
-	jwtKey, err := json.Marshal(os.Getenv("JWT_KEY"))
-	if err != nil {
-		return "", err
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenSignStr, err := token.SignedString(jwtKey)
-	if err != nil {
-		return "", err
-	}
-	return tokenSignStr, nil
+	return x
 }

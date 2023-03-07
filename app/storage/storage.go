@@ -1,121 +1,114 @@
 package storage
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/golang-jwt/jwt"
-) 
+	"github.com/gin-gonic/gin"
+)
 
-type Credential struct {
-	Id string 		 `json:"id"`
-	Login string	 `json:"login"`
-	Password string  `json:"password"`
-	Phone int		 `json:"phone"`
-	Types string	 `json:"type"`
+//test
+
+type Storage struct {
 }
 
-// // type IController interface{
-// // 	SignIn(c *gin.Context)
-// // }
-
-// // type IService interface {
-// // 	SignToken(c *gin.Context, creds storage.Credential) (string, error)
-// // }
-
-// // func NewController(service IService) *Controller {
-// // 	return &Controller{
-// // 		service: service,
-// // 	}
-// // }
-
-
-type SignKey struct {
-	
+func NewStorage() *Storage {
+	return new(Storage)
 }
 
-type keyMapType map[int]SignKey
+type keyMapType map[int]string
 
-func addKey() {
+func (storage *Storage)StorageIn(c *gin.Context, data string) error { 
 	x := make(keyMapType)
-	x[1] = SignKey{}
-	fmt.Println(x[1])
+	x[1] = data
+	fmt.Println("storage;", x[1])
+	return nil 
 }
 
+//test
 
-func NewCredential(id, login, password, types string, phone int) (*Credential, error) {
-	cred := &Credential{}
-	cred.setID(id)
-	cred.setLogin(login)
-	cred.setPassword(password)
-	cred.setPhone(phone)
-	cred.setType(types)	
+
+
+// type Credential struct {
+// 	Id string 		 `json:"id"`
+// 	Login string	 `json:"login"`
+// 	Password string  `json:"password"`
+// 	Phone int		 `json:"phone"`
+// 	Types string	 `json:"type"`
+// }
+
+// func NewCredential(id, login, password, types string, phone int) (*Credential, error) {
+// 	cred := &Credential{}
+// 	cred.setID(id)
+// 	cred.setLogin(login)
+// 	cred.setPassword(password)
+// 	cred.setPhone(phone)
+// 	cred.setType(types)	
 	
-	return cred, nil
-}
+// 	return cred, nil
+// }
 
-func (c *Credential) MyTestFunc(data int) error {
-	fmt.Println("... Hello data : ", data)
+// func (c *Credential) MyTestFunc(data int) error {
+// 	fmt.Println("... Hello data : ", data)
 
-	return nil
-}
+// 	return nil
+// }
 
-func (c *Credential) setID(id string) error {
-	if len(id) == 0 {
-		return  errors.New("ID field is required")
-	}
+// func (c *Credential) setID(id string) error {
+// 	if len(id) == 0 {
+// 		return  errors.New("ID field is required")
+// 	}
 	
-	c.Id = id
-	return nil
-}
+// 	c.Id = id
+// 	return nil
+// }
 
-func (c *Credential) setLogin(login string) error {
-	if len(login) == 0 {
-		return errors.New("Login field is required")
-	}
+// func (c *Credential) setLogin(login string) error {
+// 	if len(login) == 0 {
+// 		return errors.New("Login field is required")
+// 	}
 
-	c.Login = login
+// 	c.Login = login
 
-	return nil
-}
+// 	return nil
+// }
 
-func (c *Credential) setPassword(password string) error {
-	if len(password) == 0 {
-		return errors.New("Password field is required")
-	}
+// func (c *Credential) setPassword(password string) error {
+// 	if len(password) == 0 {
+// 		return errors.New("Password field is required")
+// 	}
 
-	c.Password = password
+// 	c.Password = password
 
-	return nil
-}
+// 	return nil
+// }
 
-func (c *Credential) setPhone(phone int) error {
-	if phone <= 0 {
-		return errors.New("Phone field is required")
-	}
+// func (c *Credential) setPhone(phone int) error {
+// 	if phone <= 0 {
+// 		return errors.New("Phone field is required")
+// 	}
 
-	c.Phone = phone
+// 	c.Phone = phone
 
-	return nil
-}
+// 	return nil
+// }
 
-func (c *Credential) setType(types string) error {
-	if len(types) == 0 {
-		return errors.New("Type field is required")
-	}
+// func (c *Credential) setType(types string) error {
+// 	if len(types) == 0 {
+// 		return errors.New("Type field is required")
+// 	}
 
-	c.Types = types
+// 	c.Types = types
 
-	return nil
-}
+// 	return nil
+// }
 
-type Claims struct{
-	Login string	 `json:"login" binding:"required"`
-	Password string  `json:"password" binding:"required"`
-	jwt.StandardClaims
-}
+// type Claims struct{
+// 	Login string	 `json:"login" binding:"required"`
+// 	Password string  `json:"password" binding:"required"`
+// 	jwt.StandardClaims
+// }
 
-var Users = []Credential{
-	{Id: "1", Login: "admin", Password: "admin1", Phone: 1234, Types: "Admin"},
-	{Id: "2", Login: "john", Password: "qwe123", Phone: 4567, Types: "Player"},
-}
+// var Users = []Credential{
+// 	{Id: "1", Login: "admin", Password: "admin1", Phone: 1234, Types: "Admin"},
+// 	{Id: "2", Login: "john", Password: "qwe123", Phone: 4567, Types: "Player"},
+// }
