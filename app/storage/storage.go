@@ -24,7 +24,16 @@ func (storage *Storage)StorageIn(c *gin.Context, data string) error{
 }
 
 
+
 // credential
+
+type TypeUser byte
+
+const (
+	ADMIN TypeUser = iota + 1
+	PLAYER
+	SUPPORT
+)
 type Credential struct {
 	Id string 		 `json:"id"`
 	Login string	 `json:"login"`

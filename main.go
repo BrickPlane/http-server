@@ -18,3 +18,4 @@ func main() {
 	router := server.Server(controller)
 	router.Run(os.Getenv("HOST")+":"+os.Getenv("PORT"))	
 }
+

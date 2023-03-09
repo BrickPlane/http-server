@@ -58,13 +58,6 @@ func (service *Service) SignToken(c *gin.Context, creds storage.Credential) (str
 	return tokenSignStr, nil
 }
 
-// type ParseService struct {
-// }
-
-// func NewParseService() *Service {
-// 	return new(Service)
-// }
-
 func (service *Service)ParseWithBearer(c *gin.Context) {
 	authorizationHeader := c.Request.Header.Get("authorization")
 	if authorizationHeader == "" {
