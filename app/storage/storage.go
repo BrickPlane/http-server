@@ -4,9 +4,27 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 ) 
+type Storage struct {
+}
 
+func NewStorage() *Storage {
+	return new(Storage)
+}
+
+type keyMapType map[int]string
+
+func (storage *Storage)StorageIn(c *gin.Context, data string) error{
+	x := make(keyMapType)
+	x[1] = data
+	fmt.Println("-- key:  ", x[1])
+	return nil
+}
+
+
+// credential
 type Credential struct {
 	Id string 		 `json:"id"`
 	Login string	 `json:"login"`
@@ -14,34 +32,6 @@ type Credential struct {
 	Phone int		 `json:"phone"`
 	Types string	 `json:"type"`
 }
-
-// // type IController interface{
-// // 	SignIn(c *gin.Context)
-// // }
-
-// // type IService interface {
-// // 	SignToken(c *gin.Context, creds storage.Credential) (string, error)
-// // }
-
-// // func NewController(service IService) *Controller {
-// // 	return &Controller{
-// // 		service: service,
-// // 	}
-// // }
-
-
-type SignKey struct {
-	
-}
-
-type keyMapType map[int]SignKey
-
-func addKey() {
-	x := make(keyMapType)
-	x[1] = SignKey{}
-	fmt.Println(x[1])
-}
-
 
 func NewCredential(id, login, password, types string, phone int) (*Credential, error) {
 	cred := &Credential{}
