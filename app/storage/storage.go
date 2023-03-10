@@ -6,40 +6,35 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-) 
+)
+
 type Storage struct {
 }
 
 func NewStorage() *Storage {
 	return new(Storage)
 }
+// ?? 
+type Map map[string]string
+// ??
+var Users = []Credential{}
 
-type keyMapType map[int]string
-
-func (storage *Storage)StorageIn(c *gin.Context, data string) error{
-	x := make(keyMapType)
-	x[1] = data
-	fmt.Println("-- key:  ", x[1])
+func (storage *Storage) StorageIn(c *gin.Context, data string) error {
+	var Users = []Map{
+		{"Id": "1", "Login": "admin", "Password": "admin1", "Phone": "1234", "Types": "Admin"},
+		// {Id: "2", Login: "john", Password: "qwe123", Phone: 4567, Types: "Player"},
+	}
+	fmt.Println("users", Users)
 	return nil
 }
 
-
-
 // credential
 
-type TypeUser byte
 
-const (
-	ADMIN TypeUser = iota + 1
-	PLAYER
-	SUPPORT
-)
 type Credential struct {
-	Id string 		 `json:"id"`
-	Login string	 `json:"login"`
-	Password string  `json:"password"`
-	Phone int		 `json:"phone"`
-	Types string	 `json:"type"`
+	Id       string `json:"id"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
 }
 
 func NewCredential(id, login, password, types string, phone int) (*Credential, error) {
@@ -47,9 +42,7 @@ func NewCredential(id, login, password, types string, phone int) (*Credential, e
 	cred.setID(id)
 	cred.setLogin(login)
 	cred.setPassword(password)
-	cred.setPhone(phone)
-	cred.setType(types)	
-	
+
 	return cred, nil
 }
 
@@ -61,9 +54,9 @@ func (c *Credential) MyTestFunc(data int) error {
 
 func (c *Credential) setID(id string) error {
 	if len(id) == 0 {
-		return  errors.New("ID field is required")
+		return errors.New("ID field is required")
 	}
-	
+
 	c.Id = id
 	return nil
 }
@@ -88,33 +81,10 @@ func (c *Credential) setPassword(password string) error {
 	return nil
 }
 
-func (c *Credential) setPhone(phone int) error {
-	if phone <= 0 {
-		return errors.New("Phone field is required")
-	}
-
-	c.Phone = phone
-
-	return nil
-}
-
-func (c *Credential) setType(types string) error {
-	if len(types) == 0 {
-		return errors.New("Type field is required")
-	}
-
-	c.Types = types
-
-	return nil
-}
-
-type Claims struct{
-	Login string	 `json:"login" binding:"required"`
-	Password string  `json:"password" binding:"required"`
+type Claims struct {
+	Login    string `json:"login" binding:"required"`
+	Password string `json:"password" binding:"required"`
 	jwt.StandardClaims
 }
 
-var Users = []Credential{
-	{Id: "1", Login: "admin", Password: "admin1", Phone: 1234, Types: "Admin"},
-	{Id: "2", Login: "john", Password: "qwe123", Phone: 4567, Types: "Player"},
-}
+

@@ -1,19 +1,17 @@
 package server
 
 import (
-
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-) 
+)
 
-type IController interface{
+type IController interface {
 	SignIn(c *gin.Context)
 	ParseBearer(c *gin.Context)
 	GetUser(c *gin.Context)
 }
 
-func Server(controller IController) *gin.Engine{
+func Server(controller IController) *gin.Engine {
 	godotenv.Load()
 	router := gin.Default()
 	router.POST("/signIn", controller.SignIn)
@@ -22,5 +20,3 @@ func Server(controller IController) *gin.Engine{
 
 	return router
 }
-
-

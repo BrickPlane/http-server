@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-) 
+)
 
 func main() {
 	godotenv.Load("secret.env")
@@ -16,6 +16,6 @@ func main() {
 	service := service.NewService(storage)
 	controller := controller.NewController(service)
 	router := server.Server(controller)
-	router.Run(os.Getenv("HOST")+":"+os.Getenv("PORT"))	
+	
+	router.Run(os.Getenv("HOST") + ":" + os.Getenv("PORT"))
 }
-

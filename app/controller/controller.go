@@ -22,12 +22,11 @@ func NewController(service IService) *Controller {
 	}
 }
 
-func (controller *Controller)GetUser(c *gin.Context) {
+func (controller *Controller) GetUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, storage.Users)
 }
 
-
-func (controller *Controller)SignIn(c *gin.Context) {
+func (controller *Controller) SignIn(c *gin.Context) {
 	var creds storage.Credential
 	if err := c.BindJSON(&creds); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, "Wrong input data")
@@ -37,13 +36,20 @@ func (controller *Controller)SignIn(c *gin.Context) {
 	// token, err := service.SignToken(c, creds)
 	token, err := controller.service.SignToken(c, creds)
 	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
+		return
 	}
-
-	c.IndentedJSON(http.StatusOK, token)
+	
+	for _, a := range storage.Users {
+		if a.Id == creds.Id {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "user already exist"})
+			return
+		}
+	}
+	storage.Users = append(storage.Users, creds)
+	c.IndentedJSON(http.StatusOK, gin.H{"token:": token})
 }
 
-func (controller *Controller)ParseBearer(c *gin.Context) {
+func (controller *Controller) ParseBearer(c *gin.Context) {
 	controller.service.ParseWithBearer(c)
-	}
-
+}
