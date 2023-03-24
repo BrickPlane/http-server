@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 )
 
 type Storage struct {
@@ -22,7 +21,6 @@ func NewStorage() (*Storage, error) {
 }
 
 func connectDB() (*sqlx.DB, error) {
-	godotenv.Load("secret.env")
 	db, err := sqlx.Connect("postgres", os.Getenv("CONNECT"))
 	if err != nil {
 		panic(err)

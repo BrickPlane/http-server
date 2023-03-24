@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"http2/app/types"
 	"net/http"
 
@@ -98,7 +97,7 @@ func (controller *Controller) GetUserByID(c *gin.Context) {
 }
 
 type GetUserByIDRequest struct {
-	Ids []int `json: "ids"`
+	IDs []int `json:"ids"`
 }
 
 func (controller *Controller) GetUserByIDs(c *gin.Context) {
@@ -107,8 +106,8 @@ func (controller *Controller) GetUserByIDs(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "Wrong input data")
 		return
 	}
-	fmt.Println(req)
-	users, err := controller.service.GetUserByIDs(req.Ids)
+
+	users, err := controller.service.GetUserByIDs(req.IDs)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
