@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"os"
-
 	"github.com/jmoiron/sqlx"
 )
 
@@ -21,7 +19,7 @@ func NewStorage() (*Storage, error) {
 }
 
 func connectDB() (*sqlx.DB, error) {
-	db, err := sqlx.Connect("postgres", os.Getenv("CONNECT"))
+	db, err := sqlx.Connect("postgres", "port=8088 user=postgres password=222 dbname=http-prjct sslmode=disable")
 	if err != nil {
 		panic(err)
 	}

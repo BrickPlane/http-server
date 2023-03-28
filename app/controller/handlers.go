@@ -7,10 +7,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (controller *Controller) HandlerFunc() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var creds types.Credential
+
+		if err := c.BindJSON(&creds); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, "[hendlers] Wrong input data")
+			return
+		}
+		if err := controller.service.ParseWithBearer(c, creds); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+		c.Set("key", creds)
+		c.Next()
+		return
+	}
+}
+
 func (controller *Controller) Signin(c *gin.Context) {
 	var creds types.Credential
 	if err := c.BindJSON(&creds); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, "Wrong input data")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Wrong input data [signIn]")
 		return
 	}
 
@@ -18,82 +36,50 @@ func (controller *Controller) Signin(c *gin.Context) {
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
-
 	}
-	c.IndentedJSON(http.StatusOK, data)
-	return
-	// 	var newUser storage.Credential
-	// 	if err := c.BindJSON(&newUser); err != nil {
-	// 		c.IndentedJSON(http.StatusBadRequest, "wrong input data")
-	// 		return
-	// 	}
-	// 	q := `INSERT INTO credential (login, password) VALUES (:login, :password) ON CONFLICT DO NOTHING`
-	// 	result, err := controller.DB.QueryRow(q, newUser.Login, newUser.Password)
-	// 	if err != nil {
-	// 		c.IndentedJSON(http.StatusInternalServerError, "can`t record new data")
-	// 	}
-	// 	n, err := result.Columns()
-	// 	if err != nil {
-	// 		c.IndentedJSON(http.StatusInternalServerError, "error check rows DB")
-	// 	}
-	// 	if n == nil {
-	// 		c.IndentedJSON(http.StatusInternalServerError, "can`t record data")
-	// 	}
-	// 	c.IndentedJSON(http.StatusOK, "successfuly create user")
-	// }
 
-	// func (controller *Controller) Login(c *gin.Context) {
-	// 	var creds storage.Credential
-	// 	if err := c.BindJSON(&creds); err != nil {
-	// 		c.IndentedJSON(http.StatusBadRequest, "Wrong input data")
-	// 		return
-	// 	}
-	// 	token, err := controller.service.LoginToken(c, creds)
-	// 	if err != nil {
-	// 		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
-	// 		return
-	// 	}
-	// 	for _, a := range storage.Users {
-	// 		if a.Login == creds.Login {
-	// 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "user already exist"})
-	// 			return
-	// 		}
-	// 	}
-	// storage.Users = append(storage.Users, creds)
-	// c.IndentedJSON(http.StatusOK, gin.H{"token:": token})
+	token, _ := controller.service.GenToken(c, creds)
+	var userInfo []any
+	userInfo = append(userInfo, data, token)
+	c.IndentedJSON(http.StatusOK, userInfo)
+	return
 }
 
 func (controller *Controller) ParseBearer(c *gin.Context) {
-	err := controller.service.ParseWithBearer(c)
-	if err != nil {
-		c.IndentedJSON(http.StatusUnauthorized, err)
-	}
-	c.IndentedJSON(http.StatusOK, gin.H{"msg": "Token valid"})
+	// err := controller.service.ParseWithBearer(c)
+	// err = nil
+	// if err = nil {
+	// 	// c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+	// 	return
+	// }
+	c.IndentedJSON(http.StatusOK, gin.H{"msg": "func not used now"})
+	return
 }
 
-func (controller *Controller) GetUser(c *gin.Context) {
-	allUser, err := controller.service.GetUser()
+func (controller *Controller) GetAllUser(c *gin.Context) {
+	allUser, err := controller.service.GetAllUser()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.IndentedJSON(http.StatusOK, allUser)
 	return
 }
 
-func (controller *Controller) GetUserByID(c *gin.Context) {
-	var get types.Credential
-	if err := c.BindJSON(&get); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "Wrong input data")
+func (controller *Controller) GetUser(c *gin.Context) {
+	getKey := c.MustGet("key")
+	get, ok := getKey.(types.Credential)
+	if !ok {
 		return
 	}
 
-	idUser, err := controller.service.GetUserByID(get)
+	idUser, err := controller.service.GetUser(get)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
 	}
 	c.IndentedJSON(http.StatusOK, idUser)
+	return
 }
 
 type GetUserByIDRequest struct {
@@ -113,34 +99,36 @@ func (controller *Controller) GetUserByIDs(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, users)
+	return
 }
 
 func (Controller *Controller) Update(c *gin.Context) {
-	var upd types.Credential
-	if err := c.BindJSON(&upd); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "Wrong input data")
+	updKey := c.MustGet("key")
+	upd, ok := updKey.(types.Credential)
+	if !ok {
 		return
 	}
 
 	data, err := Controller.service.UpdateUser(upd)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
+
 	c.IndentedJSON(http.StatusOK, data)
 	return
 }
 
 func (Controller *Controller) Delete(c *gin.Context) {
-	var dlt types.Credential
-	if err := c.BindJSON(&dlt); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, "Wrong input data")
+	dltKey := c.MustGet("key")
+	dlt, ok := dltKey.(types.Credential)
+	if !ok {
 		return
 	}
-
 	err := Controller.service.DeleteUser(dlt)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, "User deleted")

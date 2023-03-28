@@ -28,14 +28,8 @@ func main() {
 }
 
 
-// TODO connect to database ✓
-// TODO create table if didn`t exist ✓
-// TODO rout signIn -> write in DB ✓
-// TODO make getAllUser route - interface + DB ✓ 
 
-// TODO User can create account in the system (Save in DB email and password)
 // TODO User can update account (email or password. If email already exist return error message)
 // TODO User can get info about him (Send ID or email and server has return info about user)
 // TODO User can delete his account (Can delete only his own account)
-// TODO Login to the system. If user was created in the system and his credential is correct, send JWT token.
-// TODO Fresh and correct JWT token give user do points 2 - 4 
+// TODO Fresh and correct JWT token give user do points 1 - 3 

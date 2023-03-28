@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS "user" (
 	password text
 );
 
-// migrate -path ./db -database "postgresql://postgres:222@localhost:8088/http-prjct?sslmode=disable" up
+/* migrate -path ./db -database "postgresql://postgres:222@localhost:8088/http-prjct?sslmode=disable" up

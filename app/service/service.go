@@ -8,10 +8,10 @@ import (
 
 type IStorage interface {
 	SaveUser(val types.Credential) (*types.Credential, error)
-	GetUser() ([]types.Credential, error)
+	GetAllUser() ([]types.Credential, error)
 	Update(val types.Credential) (*types.Credential, error)
 	Delete(val types.Credential) error
-	GetUserByID(val types.Credential) (*types.Credential, error)
+	GetUser(val types.Credential) (*types.Credential, error)
 	GetUserByIDs(ids []int) ([]types.Credential, error)
 }
 

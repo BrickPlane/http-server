@@ -17,17 +17,16 @@ func (srv *Service) SigninUser(creds types.Credential) (*types.Credential, error
 	return data, nil
 }
 
-func (srv *Service) GetUser() ([]types.Credential, error) {
-	data, err := srv.storage.GetUser()
+func (srv *Service) GetAllUser() ([]types.Credential, error) {
+	data, err := srv.storage.GetAllUser()
 	if err != nil {
 		return nil, err
 	}
 	return data, nil
-
 }
 
-func (srv* Service) GetUserByID(get types.Credential) (*types.Credential, error) {
-	data, err := srv.storage.GetUserByID(get)
+func (srv* Service) GetUser(get types.Credential) (*types.Credential, error) {
+	data, err := srv.storage.GetUser(get)
 	if err != nil {
 		return nil, err
 	}

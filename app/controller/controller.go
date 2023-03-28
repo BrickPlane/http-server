@@ -9,16 +9,18 @@ import (
 
 type IService interface {
 	SigninUser(creds types.Credential) (*types.Credential, error)
-	ParseWithBearer(c *gin.Context) error
-	GetUser() ([]types.Credential, error)
+	GenToken(c *gin.Context, creds types.Credential) (string, error)
+	ParseWithBearer(c *gin.Context, creds types.Credential) error
+	GetAllUser() ([]types.Credential, error)
 	UpdateUser(upd types.Credential) (*types.Credential, error)
 	DeleteUser(dlt types.Credential) error
-	GetUserByID(get types.Credential) (*types.Credential, error)
+	GetUser(get types.Credential) (*types.Credential, error)
 	GetUserByIDs(gets []int) ([]types.Credential, error)
 }
 
 type Controller struct {
 	service IService
+
 }
 
 func NewController(service IService) *Controller {

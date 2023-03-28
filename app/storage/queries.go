@@ -8,12 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// TODO email and login must be unique ✓
-// TODO handle errors from DB ✓
-// TODO must be get user by ID ✓
-// TODO must be get user by IDs ✓
-// TODO for creating user table use migration package (https://github.com/golang-migrate/migrate) ✓
-
 func (stor *Storage) SaveUser(val types.Credential) (*types.Credential, error) {
 	data, err := stor.DB.Query(`
 		INSERT INTO "user" (email, login, password)
@@ -40,7 +34,7 @@ func (stor *Storage) SaveUser(val types.Credential) (*types.Credential, error) {
 	return cred, nil
 }
 
-func (stor *Storage) GetUser() ([]types.Credential, error) {
+func (stor *Storage) GetAllUser() ([]types.Credential, error) {
 	val, err := stor.DB.Query(`SELECT * FROM "user"`)
 	if err != nil {
 		return nil, err
@@ -62,8 +56,8 @@ func (stor *Storage) GetUser() ([]types.Credential, error) {
 	return mk, err
 }
 
-func (stor *Storage) GetUserByID(val types.Credential) (*types.Credential, error) {
-	data, err := stor.DB.Query(`SELECT * FROM "user" WHERE id=$1`, val.ID)
+func (stor *Storage) GetUser(val types.Credential) (*types.Credential, error) {
+	data, err := stor.DB.Query(`SELECT * FROM "user" WHERE email=$1`, val.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +100,13 @@ func (stor *Storage) GetUserByIDs(ids []int) ([]types.Credential, error) {
 	}
 	return users, err
 }
-
+// using map
 func (stor *Storage) Update(val types.Credential) (*types.Credential, error) {
-	data, err := stor.DB.Query(`UPDATE "user" SET password=$1, login=$2 WHERE email=$3;`, val.Password, val.Login, val.Email)
+	data, err := stor.DB.Query(`UPDATE "user" SET password=$1, login=$2 WHERE email=$3 RETURNING *;`, val.Password, val.Login, val.Email)	
 	if err != nil {
 		return nil, err
 	}
-
+	
 	cred := &types.Credential{}
 	for data.Next() {
 		if err := data.Scan(
@@ -124,7 +118,6 @@ func (stor *Storage) Update(val types.Credential) (*types.Credential, error) {
 			return nil, erors.CredError
 		}
 	}
-
 	return cred, nil
 }
 
