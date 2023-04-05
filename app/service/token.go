@@ -14,14 +14,15 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func (service *Service) GenToken(c *gin.Context, creds types.Credential) (string, error) {
+func (service *Service) GenToken(c *gin.Context, creds types.User) (string, error) {
 	timeToDie, err := strconv.ParseInt(os.Getenv("TIME_TO_DIE"), 10, 64)
 	if err != nil {
 		return ":", err
 	}
-	claims := &types.Claims{
+
+	tokenData := &types.JWTUploadData{
+		ID:    uint64(creds.ID),
 		Login: creds.Login,
-		Password: creds.Password,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Duration(timeToDie) * time.Hour).Unix(),
 		},
@@ -31,7 +32,7 @@ func (service *Service) GenToken(c *gin.Context, creds types.Credential) (string
 		return ":", err
 	}
 
-	encryption := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	encryption := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenData)
 	jwtToken, err := encryption.SignedString(jwtKey)
 	if err != nil {
 		return ":", err
@@ -39,39 +40,40 @@ func (service *Service) GenToken(c *gin.Context, creds types.Credential) (string
 	return jwtToken, nil
 }
 
-func (service *Service) ParseWithBearer(c *gin.Context, creds types.Credential) error{
+func (service *Service) ParseWithBearer(c *gin.Context) (*types.JWTUploadData, error) {
 	authorizationHeader := c.Request.Header.Get("authorization")
 	if authorizationHeader == "" {
-		return erors.NotFound
+		return nil, erors.NotFound
 	}
 
 	bearerToken := strings.Split(authorizationHeader, " ")
 
 	if len(bearerToken) < 2 {
-		return erors.NotFound
+		return nil, erors.NotFound
 	}
 
-	expiration, err := parseJWtToken(bearerToken[1])
+	tokenData, err := parseJWtToken(bearerToken[1])
 	if err != nil {
-		return erors.Invalid
-		
+		return nil, erors.Invalid
+
 	}
 
-	for key, val := range *expiration {
-		if key == "exp" {
+	uploadData := &types.JWTUploadData{}
+	for key, val := range *tokenData {
+		switch key {
+		case "exp":
 			if time.Now().Unix() > int64(val.(float64)) {
-				return erors.Invalid
+				return nil, erors.Invalid
 			}
+		case "id":
+			uploadData.ID = uint64(val.(float64))
+		case "login":
+			uploadData.Login = val.(string)
+		default:
+			return nil, err
 		}
 	}
-	for key, val := range *expiration {
-		if key == "login" {
-			if val != creds.Login {
-				return erors.NotSame
-			}
-		}
-	}
-	return nil
+	return uploadData, nil
 }
 
 func parseJWtToken(token string) (*jwt.MapClaims, error) {
@@ -86,7 +88,7 @@ func parseJWtToken(token string) (*jwt.MapClaims, error) {
 }
 
 func keyFunc(token *jwt.Token) (interface{}, error) {
-	
+
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, erors.Method
 	}
@@ -97,4 +99,12 @@ func keyFunc(token *jwt.Token) (interface{}, error) {
 	}
 
 	return []byte(jwtKey), nil
+}
+
+func (service *Service) TokenVerification(tokenData *types.JWTUploadData) error {
+	_, err := service.storage.GetUserByID(tokenData.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

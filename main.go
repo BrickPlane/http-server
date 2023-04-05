@@ -26,10 +26,3 @@ func main() {
 	
 	router.Run(os.Getenv("HOST") + ":" + os.Getenv("PORT"))
 }
-
-
-
-// TODO User can update account (email or password. If email already exist return error message)
-// TODO User can get info about him (Send ID or email and server has return info about user)
-// TODO User can delete his account (Can delete only his own account)
-// TODO Fresh and correct JWT token give user do points 1 - 3 

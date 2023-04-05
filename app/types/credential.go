@@ -4,24 +4,24 @@ import (
 	"http2/app/types/erors"
 )
 
-type Credential struct {
+type User struct {
 	ID       int    `json:"id" db:"id"`
 	Email    string `json:"email" db:"email"`
 	Login    string `json:"login" db:"login"`
 	Password string `json:"password" db:"password"`
 }
 
-func NewCredential(login, email, password string, id int) *Credential {
-	cred := &Credential{}
-	cred.setID(id)
-	cred.setEmail(email)
-	cred.setLogin(login)
-	cred.setPassword(password)
+func NewUser(login, email, password string, id int) *User {
+	user := &User{}
+	user.setID(id)
+	user.setEmail(email)
+	user.setLogin(login)
+	user.setPassword(password)
 
-	return cred
+	return user
 }
 
-func LoginValidate(login, password string) error {
+func UserValidate(login, password, email string) error {
 	if len(login) == 0 {
 		return erors.Login
 	}
@@ -29,11 +29,15 @@ func LoginValidate(login, password string) error {
 	if len(password) == 0 {
 		return erors.Pass
 	}
+
+	if len(email) == 0 {
+		return erors.Email
+	}
 	return nil
 }
 
 
-func (c *Credential) setID(ID int) error {
+func (c *User) setID(ID int) error {
 	if ID <= 0 {
 		return erors.Id
 	}
@@ -41,7 +45,7 @@ func (c *Credential) setID(ID int) error {
 	return nil
 }
 
-func (c *Credential) setEmail(email string) error {
+func (c *User) setEmail(email string) error {
 	if len(email) == 0 {
 		return erors.Email
 	}
@@ -51,7 +55,7 @@ func (c *Credential) setEmail(email string) error {
 	return nil
 }
 
-func (c *Credential) setLogin(login string) error {
+func (c *User) setLogin(login string) error {
 	if len(login) == 0 {
 		return erors.Login
 	}
@@ -61,7 +65,7 @@ func (c *Credential) setLogin(login string) error {
 	return nil
 }
 
-func (c *Credential) setPassword(password string) error {
+func (c *User) setPassword(password string) error {
 	if len(password) == 0 {
 		return erors.Pass
 	}
