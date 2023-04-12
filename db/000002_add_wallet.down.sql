@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE "user" DROP wallet;
+
+COMMIT:

@@ -15,6 +15,7 @@ type CommonResp struct {
 
 func (controller *Controller) HandlerFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		var req interface{}
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, err)
@@ -58,7 +59,7 @@ func (controller *Controller) HandlerFunc() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-
+		fmt.Println("formatData", formatData)
 	}
 }
 
@@ -197,13 +198,12 @@ func (Controller *Controller) Update(c *gin.Context) {
 		return
 	}
 
-	formatData, err := convertToType[any, types.User](updKey)
+	formatData, err := convertToType[any, types.UpdateUserRequestDTO](updKey)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return
 	}
-
-	data, err := Controller.service.UpdateUser(*formatData) // ??
+	data, err := Controller.service.UpdateUser(*formatData)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err)
 		return

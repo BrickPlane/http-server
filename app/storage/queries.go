@@ -1,11 +1,12 @@
 package storage
 
 import (
-	// "context"
 	"database/sql"
 	"fmt"
 	"http2/app/types"
 	"http2/app/types/erors"
+
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -13,10 +14,10 @@ import (
 
 func (stor *Storage) SaveUser(val types.User) (*types.User, error) {
 	data, err := stor.DB.Query(`
-		INSERT INTO "user" (email, login, password)
-		VALUES ($1, $2, $3)
+		INSERT INTO "user" (email, login, password, wallet)
+		VALUES ($1, $2, $3, $4)
 		RETURNING *`,
-		val.Email, val.Login, val.Password,
+		val.Email, val.Login, val.Password, val.Wallet,
 	)
 	if err != nil {
 		return nil, erors.InvalidLogin
@@ -29,6 +30,7 @@ func (stor *Storage) SaveUser(val types.User) (*types.User, error) {
 			&cred.Email,
 			&cred.Login,
 			&cred.Password,
+			&cred.Wallet,
 		); err != nil {
 			return nil, erors.CredError
 		}
@@ -39,10 +41,10 @@ func (stor *Storage) SaveUser(val types.User) (*types.User, error) {
 
 func (stor *Storage) GetUser(val types.Credential) (*types.User, error) {
 	data, err := stor.DB.Query(`SELECT * FROM "user" WHERE login=$1 AND password=$2`, val.Login, val.Password)
-	if err != nil { 
+	if err != nil {
 		return nil, err
 	}
-	
+
 	cred := &types.User{}
 	for data.Next() {
 		if err := data.Scan(
@@ -50,6 +52,7 @@ func (stor *Storage) GetUser(val types.Credential) (*types.User, error) {
 			&cred.Email,
 			&cred.Login,
 			&cred.Password,
+			&cred.Wallet,
 		); err != nil {
 			return nil, erors.CredError
 		}
@@ -71,6 +74,7 @@ func (stor *Storage) GetAllUser() ([]types.User, error) {
 			&cred.Email,
 			&cred.Login,
 			&cred.Password,
+			&cred.Wallet,
 		); err != nil {
 			return nil, err
 		}
@@ -106,6 +110,7 @@ func (stor *Storage) GetUserByLogin(str string) (*types.User, error) {
 			&cred.Email,
 			&cred.Login,
 			&cred.Password,
+			&cred.Wallet,
 		); err != nil {
 			return nil, erors.CredError
 		}
@@ -129,6 +134,7 @@ func (stor *Storage) GetUserByIDs(ids []int) ([]types.User, error) {
 			&cred.Email,
 			&cred.Login,
 			&cred.Password,
+			&cred.Wallet,
 		); err != nil {
 			return nil, err
 		}
@@ -136,30 +142,49 @@ func (stor *Storage) GetUserByIDs(ids []int) ([]types.User, error) {
 	}
 	return users, err
 }
-func (stor *Storage) Update(val types.User) (*types.User, error) {
-	data, err := stor.DB.Query(`UPDATE "user" SET password=$1, email=$2 WHERE login=$3 RETURNING *;`, val.Password, val.Email, val.Login)
+func (stor *Storage) Update(id uint64, val map[string]interface{}) (*types.UpdateUserResponseDTO, error) {
+	makeVal := helperForUpdate(val)
+
+	query := fmt.Sprintf(
+		`UPDATE "user" SET %[1]s WHERE id=%[2]d RETURNING *`,
+		makeVal, id)
+	data, err := stor.DB.NamedQuery(query, val)
 	if err != nil {
 		return nil, err
 	}
 
-	cred := &types.User{}
+	cred := &types.UpdateUserResponseDTO{}
 	for data.Next() {
 		if err := data.Scan(
 			&cred.ID,
 			&cred.Email,
 			&cred.Login,
 			&cred.Password,
+			&cred.Wallet,
 		); err != nil {
+			fmt.Println(err)
 			return nil, err
 		}
 	}
-	fmt.Println(cred)
+	fmt.Println("cred", cred)
 	return cred, nil
 }
 
-func (stor *Storage) Delete(val uint64) error {
+func helperForUpdate(data map[string]interface{}) string {
+	query := make([]string, 0, len(data))
+	for key := range data {
+		query = append(query, fmt.Sprintf("%[1]s=:%[1]s", key))
+		// fmt.Println("val",val)
+		// fmt.Println("key", key)
+	}
+	// fmt.Println("query", query)
+
+	return strings.Join(query, ", ")
+}
+
+func (stor *Storage) Delete(id uint64) error {
 	dest := &types.User{}
-	err := stor.DB.Get(dest, `DELETE FROM "user" WHERE id=$1`, val)
+	err := stor.DB.Get(dest, `DELETE FROM "user" WHERE id=$1`, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return err
@@ -167,17 +192,5 @@ func (stor *Storage) Delete(val uint64) error {
 		return err
 	}
 	fmt.Println(dest)
-	return nil
-}
-
-func (stor *Storage) FindUser(val uint64) error {
-	fmt.Println("..... val ", val)
-	_, err := stor.DB.Query(`SELECT * FROM "user" WHERE id=$1`, val)
-	if err != nil {
-		fmt.Println("[finduser] error")
-		return err
-	}
-
-	fmt.Println("no error")
 	return nil
 }

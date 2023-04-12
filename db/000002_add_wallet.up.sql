@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE "user" 
+ADD wallet MONEY;
+
+COMMIT;

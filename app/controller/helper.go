@@ -6,7 +6,7 @@ import (
 
 )
 
-func  convertToType[inputType any, outputType types.Credential | types.UserID | types.User](inpurtData inputType) (*outputType, error) {
+func  convertToType[inputType any, outputType types.Credential | types.UserID | types.User | types.UpdateUserRequestDTO](inpurtData inputType) (*outputType, error) {
 	byteReq, err := json.Marshal(inpurtData)
 	if err != nil {
 		return nil, err

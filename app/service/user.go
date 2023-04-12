@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"http2/app/types"
 )
 
@@ -18,11 +19,11 @@ func (srv *Service) SigninUser(info types.User) (*types.User, error) {
 }
 
 func (srv *Service) Login(creds types.Credential) (*types.User, error) {
-	data, err := srv.storage.GetUser(creds); 
-	if  err != nil {
+	data, err := srv.storage.GetUser(creds)
+	if err != nil {
 		return nil, err
-	} 
-	
+	}
+
 	return data, nil
 }
 
@@ -34,7 +35,7 @@ func (srv *Service) GetAllUser() ([]types.User, error) {
 	return data, nil
 }
 
-func (srv* Service) GetUserByID(id uint64) (*types.User, error) {
+func (srv *Service) GetUserByID(id uint64) (*types.User, error) {
 	data, err := srv.storage.GetUserByID(id)
 	if err != nil {
 		return nil, err
@@ -58,8 +59,30 @@ func (srv *Service) GetUserByLogin(str string) (*types.User, error) {
 	return data, nil
 }
 
-func (srv *Service) UpdateUser(upd types.User) (*types.User, error) {
-	data, err := srv.storage.Update(upd)
+func (srv *Service) UpdateUser(upd types.UpdateUserRequestDTO) (*types.UpdateUserResponseDTO, error) {
+	varUser := make(map[string]interface{})
+
+	if upd.Login != nil && len(*upd.Login) != 0 {
+		varUser["login"] = *upd.Login
+	}
+
+	if upd.Email != nil && len(*upd.Email) != 0 {
+		varUser["email"] = *upd.Email
+	}
+
+	if upd.Password != nil && len(*upd.Password) != 0 {
+		varUser["password"] = *upd.Password
+	}
+
+	if upd.Wallet != nil && len(*upd.Wallet) != 0 {
+		varUser["wallet"] = *upd.Wallet
+	}
+
+	if len(varUser) == 0 {
+		return nil, errors.New("Nothing to chenged")
+	}
+
+	data, err := srv.storage.Update(uint64(upd.ID), varUser)
 	if err != nil {
 		return nil, err
 	}

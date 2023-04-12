@@ -26,15 +26,6 @@ func connectDB() (*sqlx.DB, error) {
 	if db != nil {
 		db.Ping()
 	}
-	// db.MustExec(postCred)
 
 	return db, nil
 }
-
-// const postCred = `
-// CREATE TABLE IF NOT EXISTS "user" (
-// 	id SERIAL PRIMARY KEY,
-// 	email text UNIQUE,
-// 	login text UNIQUE,
-// 	password text
-// );`

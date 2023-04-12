@@ -19,10 +19,19 @@ func main() {
 		fmt.Println(" Get error while creating DB connect ", err)
 		os.Exit(1)
 	}
+
+	prodStorage, err := storage.NewProdStorage()
+	if err != nil {
+		fmt.Println(" Get error while creating DB connect ", err)
+		os.Exit(1)
+	}
+
 	
-	service := service.NewService(startDB, startDB.DB)
-	controller := controller.NewController(service)
-	router := server.Server(controller)
+	prodService := service.NewProdService(prodStorage, prodStorage.DB)
+	userService := service.NewService(startDB, startDB.DB)
+	userController := controller.NewController(userService)
+	prodController := controller.NewProdController(prodService)
+	router := server.Server(userController, prodController)
 	
 	router.Run(os.Getenv("HOST") + ":" + os.Getenv("PORT"))
 }

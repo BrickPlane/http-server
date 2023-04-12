@@ -5,7 +5,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type IController interface {
+// type IController interface {
+// 	IUserController
+// 	IProdController
+// }
+type IUserController interface {
 	HandlerFunc() gin.HandlerFunc
 	Signin(c *gin.Context)
 	Login(c *gin.Context)
@@ -18,7 +22,15 @@ type IController interface {
 	GetUserByIDs(c *gin.Context)
 }
 
-func Server(controller IController) *gin.Engine {
+type IProdController interface {
+	AddProduct(c *gin.Context)
+	GetProduct(c *gin.Context)
+	GetProductByID(c *gin.Context)
+	UpdateProduct(c *gin.Context)
+	DeleteProduct(c *gin.Context)
+}
+
+func Server(controller IUserController, prodController IProdController) *gin.Engine {
 	godotenv.Load()
 	router := gin.Default()
 	router.POST("/registration", controller.Signin)
@@ -27,6 +39,11 @@ func Server(controller IController) *gin.Engine {
 	router.GET("/GetUserByIDs", controller.GetUserByIDs)
 	router.GET("/login", controller.Login)
 
+	router.POST("/add", prodController.AddProduct)
+	router.GET("/get", prodController.GetProduct)
+	router.GET("/getID", prodController.GetProductByID)
+	router.DELETE("/deleteProductByID", prodController.DeleteProduct)
+	router.PATCH("/updateProduct", prodController.UpdateProduct)
 
 	// apiRouters := router.Group("/api", controller.HandlerFunc())
 	router.Use(controller.HandlerFunc())

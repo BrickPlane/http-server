@@ -9,14 +9,16 @@ type User struct {
 	Email    string `json:"email" db:"email"`
 	Login    string `json:"login" db:"login"`
 	Password string `json:"password" db:"password"`
+	Wallet   string `json:"wallet" db:"wallet"`
 }
 
-func NewUser(login, email, password string, id int) *User {
+func NewUser(login, email, password, wallet string, id int) *User {
 	user := &User{}
 	user.setID(id)
 	user.setEmail(email)
 	user.setLogin(login)
 	user.setPassword(password)
+	user.setWallet(wallet)
 
 	return user
 }
@@ -25,7 +27,7 @@ func UserValidate(login, password, email string) error {
 	if len(login) == 0 {
 		return erors.Login
 	}
-	
+
 	if len(password) == 0 {
 		return erors.Pass
 	}
@@ -35,7 +37,6 @@ func UserValidate(login, password, email string) error {
 	}
 	return nil
 }
-
 
 func (c *User) setID(ID int) error {
 	if ID <= 0 {
@@ -71,6 +72,15 @@ func (c *User) setPassword(password string) error {
 	}
 
 	c.Password = password
+
+	return nil
+}
+
+func (c *User) setWallet(wallet string) error {
+	if len(wallet) == 0 {
+		return erors.Wallet
+	}
+	c.Wallet = wallet
 
 	return nil
 }
