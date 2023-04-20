@@ -6,9 +6,3 @@ type JWTUploadData struct {
 	Login string `json:"login"`
 	jwt.StandardClaims
 }
-
-// type Claims struct {
-// 	Login    string `json:"login" binding:"required"`
-// 	Password string `json:"password" binding:"required"`
-// 	jwt.StandardClaims
-// }

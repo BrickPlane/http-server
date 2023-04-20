@@ -1,6 +1,6 @@
 BEGIN;
 
-ALTER TABLE "user" 
-ADD wallet MONEY;
+ALTER TABLE "users" 
+ADD wallet DOUBLE PRECISION;
 
 COMMIT;

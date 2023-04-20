@@ -5,10 +5,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// type IController interface {
-// 	IUserController
-// 	IProdController
-// }
 type IUserController interface {
 	HandlerFunc() gin.HandlerFunc
 	Signin(c *gin.Context)
@@ -30,27 +26,50 @@ type IProdController interface {
 	DeleteProduct(c *gin.Context)
 }
 
-func Server(controller IUserController, prodController IProdController) *gin.Engine {
+type IWalletController interface {
+	ReplenishmentWallet(c *gin.Context)
+}
+
+type IPurchasesController interface {
+	Purchases(c *gin.Context)
+	GetPurchases(c *gin.Context)
+}
+
+func Server(
+	controller IUserController, 
+	prodController IProdController, 
+	walletController IWalletController,
+	purchasesController IPurchasesController,
+	) *gin.Engine {
 	godotenv.Load()
 	router := gin.Default()
-	router.POST("/registration", controller.Signin)
-	router.POST("/getToken", controller.ParseBearer)
-	router.GET("/getAllUsers", controller.GetAllUser)
-	router.GET("/GetUserByIDs", controller.GetUserByIDs)
-	router.GET("/login", controller.Login)
 
-	router.POST("/add", prodController.AddProduct)
-	router.GET("/get", prodController.GetProduct)
-	router.GET("/getID", prodController.GetProductByID)
-	router.DELETE("/deleteProductByID", prodController.DeleteProduct)
-	router.PATCH("/updateProduct", prodController.UpdateProduct)
+	userRouters := router.Group("/user")
+	productRouters := router.Group("/product")
+	purchasesRouters := router.Group("/purchases")
 
-	// apiRouters := router.Group("/api", controller.HandlerFunc())
-	router.Use(controller.HandlerFunc())
-	router.GET("/getUserByID", controller.GetUserByID)
-	router.GET("/getUser", controller.GetUserByLogin)
-	router.PATCH("/update", controller.Update)
-	router.DELETE("/delete", controller.Delete)
+	router.POST("/fill", walletController.ReplenishmentWallet)
+	
+	userRouters.POST("/registration", controller.Signin)
+	userRouters.POST("/getToken", controller.ParseBearer)
+	userRouters.GET("/getAllUsers", controller.GetAllUser)
+	userRouters.GET("/GetUserByIDs", controller.GetUserByIDs)
+	userRouters.GET("/login", controller.Login)
+
+	productRouters.POST("/add", prodController.AddProduct)
+	productRouters.GET("/get", prodController.GetProduct)
+	productRouters.GET("/getID", prodController.GetProductByID)
+	productRouters.DELETE("/deleteProductByID", prodController.DeleteProduct)
+	productRouters.PATCH("/updateProduct", prodController.UpdateProduct)
+
+	purchasesRouters.POST("/buy", purchasesController.Purchases)
+	purchasesRouters.GET("/all", purchasesController.GetPurchases)
+
+	userRouters.Use(controller.HandlerFunc())
+	userRouters.GET("/getUserByID", controller.GetUserByID)
+	userRouters.GET("/getUser", controller.GetUserByLogin)
+	userRouters.PATCH("/update", controller.Update)
+	userRouters.DELETE("/delete", controller.Delete)
 
 	return router
 }
