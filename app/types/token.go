@@ -6,3 +6,7 @@ type JWTUploadData struct {
 	Login string `json:"login"`
 	jwt.StandardClaims
 }
+
+// func NewJWTUploadData() *JWTUploadData {
+
+// }

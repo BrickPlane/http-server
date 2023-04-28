@@ -74,7 +74,7 @@ func (srv *Service) UpdateUser(upd user_types.UpdateUserRequestDTO) (*user_types
 		varUser["password"] = *upd.Password
 	}
 
-	if upd.Wallet != nil && len(*upd.Wallet) != 0 {
+	if upd.Wallet != nil && *upd.Wallet != 0 {
 		varUser["wallet"] = *upd.Wallet
 	}
 

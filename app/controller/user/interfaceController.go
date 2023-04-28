@@ -11,7 +11,7 @@ import (
 type IService interface {
 	SigninUser(creds user_types.User) (*user_types.User, error)
 	Login(creds user_types.Credential) (*user_types.User, error)
-	GenToken(c *gin.Context, creds user_types.User) (string, error)
+	GenToken(c *gin.Context, creds user_types.User) (*string, error)
 	ParseWithBearer(c *gin.Context) (*types.JWTUploadData, error)
 	TokenVerification(tokenData *types.JWTUploadData) error
 	GetAllUser() ([]user_types.User, error)
@@ -20,6 +20,7 @@ type IService interface {
 	DeleteUser(dlt uint64) error
 	GetUserByID(id uint64) (*user_types.User, error)
 	GetUserByIDs(ids []int) ([]user_types.User, error)
+	CheckToken(login string, c *gin.Context) error
 }
 
 type Controller struct {

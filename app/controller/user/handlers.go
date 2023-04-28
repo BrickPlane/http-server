@@ -25,29 +25,30 @@ func (controller *Controller) HandlerFunc() gin.HandlerFunc {
 		}
 		c.Set("key", req)
 
-		token, err := controller.service.ParseWithBearer(c)
-		if err == nil {
-			fmt.Println("err handler", err)
-			// c.Next()
-			return
-		}
-
-		err = controller.service.TokenVerification(token)
-		if err != nil {
-			errResp := new(CommonResp)
-			reason := err.Error()
-			errResp.ErrorReason = &reason
-
-			c.AbortWithStatusJSON(http.StatusBadRequest, errResp)
-			c.Next()
-			return
-		}
-
 		formatData, err := convertToType[any, user_types.Credential](req)
 		if err != nil {
-
-			c.AbortWithStatusJSON(http.StatusBadRequest, err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, "Wrong incoming data")
 			return
+		}
+
+		checkToken := controller.service.CheckToken(formatData.Login, c)
+		if checkToken != nil {
+
+			token, err := controller.service.ParseWithBearer(c)
+			if err == nil {
+				fmt.Println("err handler", err)
+				// c.Next()
+				return
+			}
+			err = controller.service.TokenVerification(token)
+			if err != nil {
+				errResp := new(CommonResp)
+				reason := err.Error()
+				errResp.ErrorReason = &reason
+				c.AbortWithStatusJSON(http.StatusBadRequest, errResp)
+				c.Next()
+				return
+			}
 		}
 
 		if _, err := controller.service.Login(*formatData); err != nil {
@@ -55,7 +56,6 @@ func (controller *Controller) HandlerFunc() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		fmt.Println("formatData", formatData)
 		return
 	}
 }
@@ -77,6 +77,7 @@ func (controller *Controller) Signin(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "query error")
 		return
 	}
+
 	var userInfo []any
 	userInfo = append(userInfo, data, token)
 	c.IndentedJSON(http.StatusOK, userInfo)
@@ -86,7 +87,7 @@ func (controller *Controller) Signin(c *gin.Context) {
 func (controller *Controller) Login(c *gin.Context) {
 	var creds user_types.Credential
 	if err := c.BindJSON(&creds); err != nil {
-		_, err := controller.service.ParseWithBearer(c)
+		_, err = controller.service.ParseWithBearer(c)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, errors.InputData)
 			return

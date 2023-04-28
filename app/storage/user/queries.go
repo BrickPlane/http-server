@@ -22,7 +22,6 @@ func NewStorage() (*Storage, error) {
 	}
 
 	return &Storage{DB: con}, nil
-
 }
 
 func (stor *Storage) SaveUser(val user_types.User) (*user_types.User, error) {
@@ -156,7 +155,6 @@ func (stor *Storage) GetUserByIDs(ids []int) ([]user_types.User, error) {
 }
 func (stor *Storage) Update(id uint64, val map[string]interface{}) (*user_types.UpdateUserResponseDTO, error) {
 	makeVal := storage.HelperForUpdate(val)
-
 	query := fmt.Sprintf(
 		`UPDATE "users" SET %[1]s WHERE id=%[2]d RETURNING *`,
 		makeVal, id)
@@ -185,8 +183,10 @@ func (stor *Storage) Delete(id uint64) error {
 	err := stor.DB.Get(dest, `DELETE FROM "users" WHERE id=$1`, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			fmt.Println("1",err)
 			return err
 		}
+		fmt.Println("2",err)
 		return err
 	}
 

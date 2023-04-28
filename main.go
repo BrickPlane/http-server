@@ -15,10 +15,12 @@ import (
 	purch_storage "http2/app/storage/purchases"
 	"http2/app/storage/user"
 	"http2/app/storage/wallet"
+	"net"
 
 	"os"
 
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -60,4 +62,14 @@ func main() {
 	router := server.Server(userController, productController, walletController, purchasesController)
 	
 	router.Run(os.Getenv("HOST") + ":" + os.Getenv("PORT"))
+
+	serv, err := net.Listen("tcp", "8090")
+	if err != nil {
+		fmt.Println("1", err)
+	}
+	
+	grpcServer := grpc.NewServer()
+	if err := grpcServer.Serve(serv); err != nil {
+		fmt.Println("2", err)
+	}
 }

@@ -1,0 +1,13 @@
+  syntax = "proto3";
+
+  package user_proto;
+
+  service Getter {
+    rpc Add(Message) returns (Message) {}
+  }
+
+  message Message {
+    string txt = 1;
+  }
+
+

@@ -2,11 +2,13 @@ package user_service
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"http2/app/storage"
 	"http2/app/types"
 	"http2/app/types/userDB"
 
@@ -14,12 +16,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/redis/go-redis/v9"
 )
 
-func (service *Service) GenToken(c *gin.Context, creds user_types.User) (string, error) {
+func (service *Service) GenToken(c *gin.Context, creds user_types.User) (*string, error) {
 	timeToDie, err := strconv.ParseInt(os.Getenv("TIME_TO_DIE"), 10, 64)
 	if err != nil {
-		return ":", err
+		return nil, err
 	}
 
 	tokenData := &types.JWTUploadData{
@@ -31,15 +34,29 @@ func (service *Service) GenToken(c *gin.Context, creds user_types.User) (string,
 	}
 	jwtKey, err := json.Marshal(os.Getenv("JWT_KEY"))
 	if err != nil {
-		return ":", err
+		return nil, err
 	}
 
 	encryption := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenData)
 	jwtToken, err := encryption.SignedString(jwtKey)
 	if err != nil {
-		return ":", err
+		return nil, err
 	}
-	return jwtToken, nil
+	err = SaveToken(jwtToken, creds.Login, 10)
+	if err != nil {
+		return nil, err
+	}
+
+	return &jwtToken, nil
+}
+
+func SaveToken(token, login string, expires int64) error {
+	rdb, ctx := storage.RedisDB()
+	_, err := rdb.SetNX(ctx, login, token, time.Duration(expires)*time.Hour).Result()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (service *Service) ParseWithBearer(c *gin.Context) (*types.JWTUploadData, error) {
@@ -108,5 +125,33 @@ func (service *Service) TokenVerification(tokenData *types.JWTUploadData) error 
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (service *Service) CheckToken(login string, c *gin.Context) error {
+	authorizationHeader := c.Request.Header.Get("authorization")
+	if authorizationHeader == "" {
+		return errors.NotFound
+	}
+
+	bearerToken := strings.Split(authorizationHeader, " ")
+
+	if len(bearerToken) < 2 {
+		return errors.NotFound
+	}
+
+	rdb, ctx := storage.RedisDB()
+	val, err := rdb.Get(ctx, login).Result()
+	if err == redis.Nil {
+		return err
+	} else if err != nil {
+		return err
+	}
+	
+	if bearerToken[1] != val {
+		fmt.Println("error", err)
+		return err
+	}
+	fmt.Println("ok")
 	return nil
 }

@@ -1,7 +1,10 @@
 package storage
 
 import (
+	"context"
+
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 )
 
 func ConnectDB() (*sqlx.DB, error) {
@@ -14,4 +17,14 @@ func ConnectDB() (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+func RedisDB() (*redis.Client, context.Context) {
+	var ctx = context.Background()
+	rds := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	return rds, ctx
 }
