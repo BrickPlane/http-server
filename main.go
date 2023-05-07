@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net"
+	"os"
+
 	"http2/app/controller/product"
 	purchases_controller "http2/app/controller/purchases"
 	"http2/app/controller/user"
@@ -15,9 +18,9 @@ import (
 	purch_storage "http2/app/storage/purchases"
 	"http2/app/storage/user"
 	"http2/app/storage/wallet"
-	"net"
-
-	"os"
+	"http2/greating"
+	"http2/math"
+	"http2/proto"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
@@ -71,5 +74,22 @@ func main() {
 	grpcServer := grpc.NewServer()
 	if err := grpcServer.Serve(serv); err != nil {
 		fmt.Println("2", err)
+	}
+
+	s := grpc.NewServer()
+	mth := &math.GRPCSum{}
+	proto.RegisterSummerServer(s, mth)
+	
+	gret := &greating.GRPCGreating{}
+	proto.RegisterGreeterServer(s, gret)
+
+
+	l, err := net.Listen("tcp", ":7070")
+	if err != nil {
+		 fmt.Println("err")
+	}
+
+	if err := s.Serve(l); err != nil {
+		fmt.Println(err)
 	}
 }

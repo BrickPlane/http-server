@@ -1,13 +1,28 @@
-  syntax = "proto3";
+syntax = "proto3";
 
-  package user_proto;
+package proto;
 
-  service Getter {
-    rpc Add(Message) returns (Message) {}
-  }
+service Summer {
+    rpc Sum(MathRequest) returns (MathResponse) {}
+}
 
-  message Message {
-    string txt = 1;
-  }
+message MathRequest {
+    int32 x = 1;
+    int32 y = 2;
+}
 
+message MathResponse {
+    int32 result = 1;
+}
 
+service Greeter {
+    rpc Greet(GreetRequest) returns (GreetResponse) {}
+}
+
+message GreetRequest {
+    string Name = 1;
+}
+
+message GreetResponse {
+    string message = 1;
+}
