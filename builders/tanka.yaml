@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tanka
+spec:
+  containers:
+    - name: kubectl-tanka
+      image: max3014/tanka-with-aws-authenticator:v3
+      command:
+      - /bin/cat
+      tty: true

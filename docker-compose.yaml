@@ -1,0 +1,41 @@
+version: '2.15'
+services:
+  
+  postgres:
+    image: postgres
+    ports: 
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 222
+      POSTGRES_DB: post-prjct
+      SSLMODE: disable
+    networks: 
+      - "mainNet"
+  
+  redis:
+   image: redis
+   ports: 
+    - "6379:6379"
+   networks: 
+    - "mainNet"
+  
+  prjct:
+    container_name: http-prjct
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - "8080:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - redis
+    networks:
+    - mainNet
+
+networks:
+ mainNet:
+  driver: bridge

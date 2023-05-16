@@ -1,10 +1,10 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXIST "product" (
+CREATE TABLE IF NOT EXISTS "product" (
     id SERIAL PRIMARY KEY,
     name TEXT,
     brand TEXT,
-    price DOBLE PRECISION 
+    price DOUBLE PRECISION 
 );
 
 COMMIT;
